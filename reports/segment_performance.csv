@@ -1,0 +1,22 @@
+segment_type,segment,n,share_above,roc_auc,f1,recall,specificity,model
+platform,Google Ads,302,0.5695,0.9102,0.848,0.843,0.8077,EBM
+platform,Meta Ads,417,0.5396,0.8782,0.815,0.8222,0.7708,EBM
+objective,Awareness,112,0.4821,0.8487,0.7455,0.7593,0.7414,EBM
+objective,Engagement,119,0.4034,0.8433,0.7551,0.7708,0.8169,EBM
+objective,Leads,261,0.5556,0.9178,0.8552,0.8552,0.819,EBM
+objective,Sales,170,0.7471,0.8138,0.8661,0.8661,0.6047,EBM
+objective,Traffic,57,0.4035,0.9706,0.8182,0.7826,0.9118,EBM
+platform,Google Ads,302,0.5695,0.9091,0.8287,0.7733,0.8769,Logistic Regression
+platform,Meta Ads,417,0.5396,0.8765,0.7554,0.6933,0.8333,Logistic Regression
+objective,Awareness,112,0.4821,0.8547,0.6598,0.5926,0.8103,Logistic Regression
+objective,Engagement,119,0.4034,0.8363,0.6897,0.625,0.8732,Logistic Regression
+objective,Leads,261,0.5556,0.9171,0.8321,0.7862,0.8707,Logistic Regression
+objective,Sales,170,0.7471,0.8218,0.817,0.7559,0.7209,Logistic Regression
+objective,Traffic,57,0.4035,0.9655,0.8293,0.7391,0.9706,Logistic Regression
+platform,Google Ads,302,0.5695,0.907,0.8421,0.7907,0.8846,CatBoost
+platform,Meta Ads,417,0.5396,0.8821,0.7954,0.7689,0.8073,CatBoost
+objective,Awareness,112,0.4821,0.8493,0.6735,0.6111,0.8103,CatBoost
+objective,Engagement,119,0.4034,0.8548,0.7473,0.7083,0.8732,CatBoost
+objective,Leads,261,0.5556,0.917,0.8436,0.8,0.8793,CatBoost
+objective,Sales,170,0.7471,0.8039,0.8606,0.8504,0.6279,CatBoost
+objective,Traffic,57,0.4035,0.9783,0.8372,0.7826,0.9412,CatBoost

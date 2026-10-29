@@ -1,0 +1,27 @@
+term,importance,label,kind
+ctr_index_7d,0.47337356674759185,"CTR index, last 7 days",main effect
+ctr_index_1d,0.3837624017923528,"CTR index, last day",main effect
+ctr_index_3d,0.3793611244289744,"CTR index, last 3 days",main effect
+campaign_day,0.10548570236879815,Campaign age (days),main effect
+day_of_week,0.10014425995895686,Day of week (next day),main effect
+ctr_trend,0.09176050590397149,CTR trend (1d minus 7d index),main effect
+clicks_7d_avg,0.07471795645643421,"Avg daily clicks, last 7 days",main effect
+clicks_1d,0.06871228523111358,"Clicks, last day",main effect
+spend_cum,0.06444778420439856,Cumulative spend,main effect
+spend_1d,0.05811598395657255,"Spend, last day",main effect
+campaign_day & ctr_index_7d,0.04196260607434843,"Campaign age (days) × CTR index, last 7 days",interaction
+spend_cum & ctr_index_7d,0.03279898028867246,"Cumulative spend × CTR index, last 7 days",interaction
+impressions_7d_avg,0.03149530168095356,"Avg daily impressions, last 7 days",main effect
+spend_7d_avg,0.03108998085490122,"Avg daily spend, last 7 days",main effect
+objective,0.029659862334441022,Campaign objective,main effect
+impressions_1d & ctr_index_1d,0.026485899046449973,"Impressions, last day × CTR index, last day",interaction
+spend_cum & ctr_index_3d,0.026238509771090743,"Cumulative spend × CTR index, last 3 days",interaction
+impressions_7d_avg & ctr_index_1d,0.025496122791268585,"Avg daily impressions, last 7 days × CTR index, last day",interaction
+spend_1d & ctr_index_1d,0.024546005102615655,"Spend, last day × CTR index, last day",interaction
+impressions_1d,0.02072282302535394,"Impressions, last day",main effect
+spend_7d_avg & ctr_index_1d,0.018648689024687276,"Avg daily spend, last 7 days × CTR index, last day",interaction
+clicks_1d & ctr_index_1d,0.018240231346362806,"Clicks, last day × CTR index, last day",interaction
+spend_cum & clicks_7d_avg,0.01823449768289901,"Cumulative spend × Avg daily clicks, last 7 days",interaction
+clicks_7d_avg & ctr_index_1d,0.01751948512870821,"Avg daily clicks, last 7 days × CTR index, last day",interaction
+cpm_7d,0.01209726225523055,"CPM, last 7 days",main effect
+platform,0.003448467287467247,Advertising platform,main effect

@@ -1,0 +1,111 @@
+{
+  "train_end": "2025-08-17",
+  "val_end": "2025-09-24",
+  "benchmark_ctr_pct": {
+    "Google Ads | Awareness": 0.5362,
+    "Google Ads | Engagement": 1.6975,
+    "Google Ads | Leads": 4.4082,
+    "Google Ads | Sales": 3.3689,
+    "Google Ads | Traffic": 3.1873,
+    "Meta Ads | Awareness": 0.4546,
+    "Meta Ads | Engagement": 0.8428,
+    "Meta Ads | Leads": 0.7759,
+    "Meta Ads | Sales": 0.7367,
+    "Meta Ads | Traffic": 1.1722
+  },
+  "benchmark_group": [
+    "platform",
+    "objective"
+  ],
+  "min_impressions": 100,
+  "date_range": [
+    "2025-01-11",
+    "2025-10-30"
+  ],
+  "data_path": "/Users/Nimila/Desktop/AML - Assignment/data/raw/campaign_daily_SYNTHETIC.csv",
+  "is_synthetic": true,
+  "cleaning_log": {
+    "rows_in": 4933,
+    "no_date": 0,
+    "invalid_values": 0,
+    "duplicates_merged": 25,
+    "gap_days_filled": 104,
+    "rows_out": 5012,
+    "campaigns": 90
+  },
+  "n_rows": {
+    "train": 3383,
+    "val": 716,
+    "test": 719
+  },
+  "positive_rate": {
+    "train": 0.5022169671888856,
+    "val": 0.5418994413407822,
+    "test": 0.5521557719054242
+  },
+  "features": [
+    "platform",
+    "objective",
+    "day_of_week",
+    "campaign_day",
+    "spend_1d",
+    "spend_7d_avg",
+    "spend_cum",
+    "impressions_1d",
+    "impressions_7d_avg",
+    "clicks_1d",
+    "clicks_7d_avg",
+    "ctr_index_1d",
+    "ctr_index_3d",
+    "ctr_index_7d",
+    "ctr_trend",
+    "cpm_7d"
+  ],
+  "categorical_features": [
+    "platform",
+    "objective",
+    "day_of_week"
+  ],
+  "numeric_features": [
+    "campaign_day",
+    "spend_1d",
+    "spend_7d_avg",
+    "spend_cum",
+    "impressions_1d",
+    "impressions_7d_avg",
+    "clicks_1d",
+    "clicks_7d_avg",
+    "ctr_index_1d",
+    "ctr_index_3d",
+    "ctr_index_7d",
+    "ctr_trend",
+    "cpm_7d"
+  ],
+  "thresholds": {
+    "EBM": 0.5122494366833475,
+    "Logistic Regression": 0.5730194057861365,
+    "CatBoost": 0.5845668904637413,
+    "Persistence baseline": 1.0
+  },
+  "best_params": {
+    "EBM": {
+      "interactions": 10,
+      "max_bins": 128,
+      "min_samples_leaf": 4,
+      "learning_rate": 0.015
+    },
+    "Logistic Regression": {
+      "C": 10.0,
+      "class_weight": "balanced"
+    },
+    "CatBoost": {
+      "depth": 6,
+      "learning_rate": 0.03,
+      "l2_leaf_reg": 10
+    },
+    "Persistence baseline": {
+      "rule": "predict above if last-day CTR index > 1"
+    }
+  },
+  "trained_at": "2026-10-29T18:54:23"
+}

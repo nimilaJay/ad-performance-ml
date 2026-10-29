@@ -1,0 +1,11 @@
+# Blue accent in both light and dark mode: Streamlit's default red would make every
+# probability bar read as a warning. Defining both sections keeps the app following
+# the viewer's light/dark setting.
+[theme.light]
+primaryColor = "#2a78d6"
+
+[theme.dark]
+primaryColor = "#3987e5"
+
+[browser]
+gatherUsageStats = false
