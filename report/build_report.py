@@ -36,6 +36,7 @@ from src import config, explain  # noqa: E402
 FIGS = config.FIGURES_DIR
 SHOTS = ROOT / "report" / "screenshots"
 OUT = ROOT / "report" / "Final_Report.pdf"
+REPO_URL = "https://github.com/nimilaJay/ad-performance-ml"
 
 # ---------------------------------------------------------------- fonts and styles
 
@@ -362,7 +363,7 @@ def build():
            Spacer(1, 30 * mm)]
     info = [["Programme", "MSc in Artificial Intelligence"], ["Module", "Machine Learning (assignment report)"],
             ["Student name", "Jayawardena J.D.N.T."], ["Student ID", "269122F"],
-            ["Submission date", ph("[Date]")], ["Source code", ph("[GitHub link or ZIP file name]")]]
+            ["Submission date", "29 October 2026"], ["Source code", f'<a href="{REPO_URL}" color="{ACCENT.hexval()}">{REPO_URL}</a>']]
     t = Table([[P(a, "cellb"), P(b, "cell")] for a, b in info], colWidths=[38 * mm, 100 * mm], hAlign="LEFT")
     t.setStyle(TableStyle([("LINEBELOW", (0, 0), (-1, -1), 0.25, RULE), ("TOPPADDING", (0, 0), (-1, -1), 5),
                            ("BOTTOMPADDING", (0, 0), (-1, -1), 5), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
