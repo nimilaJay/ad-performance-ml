@@ -1,0 +1,114 @@
+# CI/CD for the Campaign CTR dashboard.
+#
+#   test   -> data, feature-pipeline, model-quality and dashboard tests (every push and pull request)
+#   build  -> build the Docker image and smoke-test the running container
+#   deploy -> roll that exact image out to Azure Container Apps
+#
+# Pushing and deploying only happen on main, and only once Azure is connected (deploy/azure_setup.sh
+# creates the AZURE_* secrets and variables). Until then the pipeline still tests and builds.
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write  # GitHub signs in to Azure with a short-lived OIDC token; no password is stored
+
+env:
+  IMAGE_NAME: ctr-dashboard
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-app.txt
+      - name: Install dependencies
+        run: pip install -r requirements-app.txt "pytest>=8.0"
+      - name: Run tests (includes the model quality gate)
+        run: pytest
+
+  build:
+    name: Build and smoke-test image
+    needs: test
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.AZURE_CONTAINER_APP != '' }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build image
+        run: docker build --build-arg GIT_SHA=${{ github.sha }} -t "$IMAGE_NAME:${{ github.sha }}" .
+      - name: Smoke-test the container
+        run: |
+          docker run -d --name app -p 8501:8501 "$IMAGE_NAME:${{ github.sha }}"
+          for _ in $(seq 1 30); do curl -fs localhost:8501/_stcore/health && break; sleep 2; done
+          docker exec app python -c "
+          from streamlit.testing.v1 import AppTest
+          at = AppTest.from_file('app/streamlit_app.py', default_timeout=300).run()
+          assert not at.exception and not at.error, (at.exception, at.error)
+          print('Dashboard rendered', len(at.tabs), 'tabs inside the container')"
+      - name: Show container logs
+        if: failure()
+        run: docker logs app
+      - name: Sign in to Azure
+        if: env.DEPLOY == 'true'
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Push image to Azure Container Registry
+        if: env.DEPLOY == 'true'
+        run: |
+          az acr login --name ${{ vars.AZURE_ACR_NAME }}
+          remote="${{ vars.AZURE_ACR_NAME }}.azurecr.io/$IMAGE_NAME:${{ github.sha }}"
+          docker tag "$IMAGE_NAME:${{ github.sha }}" "$remote"
+          docker push "$remote"
+
+  deploy:
+    name: Deploy to Azure Container Apps
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.AZURE_CONTAINER_APP != ''
+    runs-on: ubuntu-latest
+    concurrency: production
+    environment:
+      name: production
+      url: ${{ steps.release.outputs.url }}
+    steps:
+      - name: Sign in to Azure
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Roll out the new image
+        id: release
+        run: |
+          # Each revision is named after its commit, so Azure shows exactly which version is live.
+          az containerapp update \
+            --name ${{ vars.AZURE_CONTAINER_APP }} \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --image "${{ vars.AZURE_ACR_NAME }}.azurecr.io/$IMAGE_NAME:${{ github.sha }}" \
+            --revision-suffix "git-${GITHUB_SHA::7}-${{ github.run_number }}-${{ github.run_attempt }}" \
+            --output none
+          fqdn=$(az containerapp show --name ${{ vars.AZURE_CONTAINER_APP }} \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --query properties.configuration.ingress.fqdn --output tsv)
+          echo "url=https://$fqdn" >> "$GITHUB_OUTPUT"
+      - name: Check the live app
+        run: |
+          for i in $(seq 1 30); do
+            curl -fs "${{ steps.release.outputs.url }}/_stcore/health" && break
+            [ "$i" = 30 ] && { echo "Live app did not become healthy"; exit 1; }
+            sleep 10
+          done
+          echo "### Deployed \`${GITHUB_SHA::7}\` to ${{ steps.release.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"

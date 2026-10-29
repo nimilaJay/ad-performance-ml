@@ -1,0 +1,13 @@
+# Runtime dependencies of the dashboard (installed in the Docker image and in CI).
+# The saved models in models/ were trained with these exact versions; keep them pinned so the
+# pickles load identically everywhere (Python 3.12).
+interpret-core==0.7.8
+scikit-learn==1.9.1
+catboost==1.2.10
+pandas==3.1.0
+numpy==2.5.4
+scipy==1.18.1
+matplotlib==3.11.2
+plotly==7.1.0
+streamlit==1.66.1
+joblib==1.6.0

@@ -31,7 +31,11 @@ teams enter recent campaign data and see the prediction, its probability and the
 ├── data/raw/                 Input data (campaign_daily.csv = real data)
 ├── data/processed/           Modelling dataset written by train.py
 ├── models/                   Trained models + metadata.json
-└── reports/                  Metrics tables, predictions, explanation summaries, figures/
+├── reports/                  Metrics tables, predictions, explanation summaries, figures/
+├── tests/                    Data, feature-pipeline, model-quality and dashboard tests (pytest)
+├── Dockerfile                Container image for the dashboard
+├── .github/workflows/        CI/CD pipeline: test -> build -> deploy to Azure
+└── deploy/azure_setup.sh     One-time Azure setup for the pipeline
 ```
 
 ## Setup
@@ -52,22 +56,43 @@ python -m src.explain        # explainability analysis      -> reports/, reports
 jupyter nbconvert --to notebook --execute --inplace notebooks/01_eda.ipynb   # EDA (or open it in Jupyter)
 streamlit run app/streamlit_app.py                                           # dashboard
 python report/build_report.py                                                # rebuild report/269122F_Jayawardena_ML_Report.pdf
+pytest                                                                       # tests, including the model quality gate
 ```
 
 `src.train` uses `data/raw/campaign_daily.csv` if it exists, otherwise the synthetic file. Use `--data path.csv` to
 point it elsewhere. To regenerate the synthetic data: `python -m src.generate_synthetic`.
 
-## Deploying the dashboard
+## Deployment and MLOps (Azure)
 
-The app runs on [Streamlit Community Cloud](https://share.streamlit.io) straight from this repository, using the
-trained models committed in `models/`:
+The dashboard is deployed to **Azure Container Apps** by a GitHub Actions pipeline on every push to `main`:
 
-1. Sign in at share.streamlit.io with GitHub and choose **Create app → Deploy a public app from GitHub**.
-2. Repository `nimilaJay/ad-performance-ml`, branch `main`, main file path `app/streamlit_app.py`.
-3. Under **Advanced settings**, set Python to **3.12**, then **Deploy**.
+```
+git push -> GitHub Actions
+              1. test    pytest: cleaning, no look-ahead in features, models reproduce the reported
+                         results, EBM explanations add up, quality gate, dashboard renders
+              2. build   Docker image, smoke-tested as a running container
+              3. deploy  image tagged with the commit ID -> Azure Container Registry
+                         -> Azure Container Apps (new revision) -> live check on the public HTTPS URL
+```
 
-`requirements.txt` pins the library versions the models were trained with, so the saved pickles load unchanged.
-After retraining, commit the new `models/`, `reports/` and `data/processed/` files and the app redeploys itself.
+- **Quality gate:** a release is blocked unless the EBM reaches a test ROC-AUC of at least 0.80 and beats the
+  persistence baseline (`tests/test_models.py`).
+- **Traceability:** every image tag and Container Apps revision carries its git commit, and the dashboard sidebar
+  shows it as "App build".
+- **No stored passwords:** GitHub signs in to Azure with OIDC, as a managed identity limited to this resource group.
+- **Retraining:** run `python -m src.train` and `python -m src.explain`, then commit `models/`, `reports/` and
+  `data/processed/`. The pipeline re-tests the new models against the gate and redeploys them.
+- **Rollback:** point the app at an earlier image, e.g.
+  `az containerapp update -n ctr-dashboard -g rg-ctr-dashboard --image <registry>.azurecr.io/ctr-dashboard:<commit>`.
+- **Monitoring:** logs and metrics are in the Container Apps resource in the Azure portal (Log stream, Metrics).
+
+**One-time setup** (needs the Azure CLI, Docker and the GitHub CLI): `az login`, then `bash deploy/azure_setup.sh`.
+It creates the registry, the app and the GitHub connection, and prints the live URL. The app scales to zero when idle,
+so it stays within the Container Apps free monthly allowance; the Basic registry costs about US$5 a month. Remove
+everything with `az group delete --name rg-ctr-dashboard --yes`.
+
+The app also runs on [Streamlit Community Cloud](https://share.streamlit.io) without Docker (main file
+`app/streamlit_app.py`, Python 3.12).
 
 ## Collecting the data
 

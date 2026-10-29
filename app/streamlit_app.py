@@ -4,6 +4,7 @@ Run from the project root:  streamlit run app/streamlit_app.py
 """
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -94,6 +95,8 @@ with st.sidebar:
     st.caption(f"Data: {meta['date_range'][0]} to {meta['date_range'][1]} · "
                f"train ≤ {meta['train_end']} < validation ≤ {meta['val_end']} < test · "
                f"models trained {meta['trained_at'][:10]}")
+    # APP_VERSION is the git commit the Docker image was built from (set by the CI/CD pipeline).
+    st.caption(f"App build: {os.environ.get('APP_VERSION', 'local')[:7]}")
     st.caption("Predictions describe statistical associations in historical data, not causal effects.")
 
 tab_predict, tab_watch, tab_learned, tab_perf, tab_data = st.tabs(
