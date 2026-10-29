@@ -27,7 +27,7 @@ teams enter recent campaign data and see the prediction, its probability and the
 │   ├── explain.py            EBM global + local explanations, PDPs, permutation importance
 │   └── plotting.py           Shared figure style and colour palette
 ├── notebooks/01_eda.ipynb    Exploratory data analysis
-├── report/                   Final_Report.pdf, its build script and dashboard screenshots
+├── report/                   269122F_Jayawardena_ML_Report.pdf, its build script and dashboard screenshots
 ├── data/raw/                 Input data (campaign_daily.csv = real data)
 ├── data/processed/           Modelling dataset written by train.py
 ├── models/                   Trained models + metadata.json
@@ -51,7 +51,7 @@ python -m src.train          # preprocess, tune, evaluate  -> models/, reports/,
 python -m src.explain        # explainability analysis      -> reports/, reports/figures/
 jupyter nbconvert --to notebook --execute --inplace notebooks/01_eda.ipynb   # EDA (or open it in Jupyter)
 streamlit run app/streamlit_app.py                                           # dashboard
-python report/build_report.py                                                # rebuild report/Final_Report.pdf
+python report/build_report.py                                                # rebuild report/269122F_Jayawardena_ML_Report.pdf
 ```
 
 `src.train` uses `data/raw/campaign_daily.csv` if it exists, otherwise the synthetic file. Use `--data path.csv` to

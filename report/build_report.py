@@ -1,4 +1,4 @@
-"""Build the final report (report/Final_Report.pdf) from the saved results.
+"""Build the final report (report/269122F_Jayawardena_ML_Report.pdf) from the saved results.
 
 Every number in the text is read from models/ and reports/, so the PDF stays consistent with the
 code after retraining. The interpretation (Sections 5-6) was written for the current results:
@@ -35,7 +35,7 @@ from src import config, explain  # noqa: E402
 
 FIGS = config.FIGURES_DIR
 SHOTS = ROOT / "report" / "screenshots"
-OUT = ROOT / "report" / "Final_Report.pdf"
+OUT = ROOT / "report" / "269122F_Jayawardena_ML_Report.pdf"
 REPO_URL = "https://github.com/nimilaJay/ad-performance-ml"
 
 # ---------------------------------------------------------------- fonts and styles
