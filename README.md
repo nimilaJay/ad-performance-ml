@@ -57,6 +57,18 @@ python report/build_report.py                                                # r
 `src.train` uses `data/raw/campaign_daily.csv` if it exists, otherwise the synthetic file. Use `--data path.csv` to
 point it elsewhere. To regenerate the synthetic data: `python -m src.generate_synthetic`.
 
+## Deploying the dashboard
+
+The app runs on [Streamlit Community Cloud](https://share.streamlit.io) straight from this repository, using the
+trained models committed in `models/`:
+
+1. Sign in at share.streamlit.io with GitHub and choose **Create app → Deploy a public app from GitHub**.
+2. Repository `nimilaJay/ad-performance-ml`, branch `main`, main file path `app/streamlit_app.py`.
+3. Under **Advanced settings**, set Python to **3.12**, then **Deploy**.
+
+`requirements.txt` pins the library versions the models were trained with, so the saved pickles load unchanged.
+After retraining, commit the new `models/`, `reports/` and `data/processed/` files and the app redeploys itself.
+
 ## Collecting the data
 
 Only **aggregated, campaign-level** data is used: no user-level or personal data. Use accounts you are authorised to

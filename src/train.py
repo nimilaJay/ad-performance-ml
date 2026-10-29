@@ -13,6 +13,7 @@ import argparse
 import json
 import time
 from datetime import datetime
+from pathlib import Path
 
 import joblib
 import numpy as np
@@ -113,9 +114,11 @@ def main():
                           for by in ["platform", "objective"]])
     segments.round(4).to_csv(config.REPORTS_DIR / "segment_performance.csv", index=False)
 
+    # Stored relative to the project root so the dashboard also works from a fresh clone (e.g. Streamlit Cloud).
+    source = Path(panel.attrs["source_path"]).resolve()
     metadata = {
         **meta,
-        "data_path": panel.attrs["source_path"],
+        "data_path": str(source.relative_to(config.ROOT)) if source.is_relative_to(config.ROOT) else str(source),
         "is_synthetic": panel.attrs["is_synthetic"],
         "cleaning_log": panel.attrs["cleaning_log"],
         "n_rows": {s: int(len(d)) for s, d in parts.items()},

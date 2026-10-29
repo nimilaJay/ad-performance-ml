@@ -54,7 +54,7 @@ models, meta, dataset = load_artifacts()
 ebm = models["EBM"]
 benchmark = meta["benchmark_ctr_pct"]
 threshold = meta["thresholds"]["EBM"]
-panel = load_panel(meta["data_path"])
+panel = load_panel(str(config.ROOT / meta["data_path"]))  # relative paths resolve against the project root
 
 try:
     theme_mode = st.context.theme.type or "light"
