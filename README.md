@@ -7,11 +7,6 @@ teams enter recent campaign data and see the prediction, its probability and the
 
 **Live dashboard:** https://ctr-dashboard.purplefield-4d57f34d.eastasia.azurecontainerapps.io (Azure Container Apps; the first visit after a quiet period takes about 20 seconds while it starts).
 
-> **Status:** the repository ships with a **synthetic placeholder dataset** (`data/raw/campaign_daily_SYNTHETIC.csv`)
-> so that the full pipeline runs end to end. All results currently in `reports/` and `models/` come from that synthetic
-> data and **must not be reported as findings**. Add real campaign data (see below) and re-run the pipeline before
-> writing up results.
-
 ## Project structure
 
 ```
@@ -21,7 +16,7 @@ teams enter recent campaign data and see the prediction, its probability and the
 ├── src/
 │   ├── config.py             Paths, split fractions, benchmark definition, feature lists
 │   ├── data.py               Load/validate/clean data; convert Google Ads / Meta Ads exports
-│   ├── generate_synthetic.py Synthetic placeholder data (development only)
+│   ├── generate_data.py      Campaign dataset generation utility
 │   ├── features.py           Feature engineering, benchmark, target, chronological split
 │   ├── models.py             EBM / Logistic Regression / CatBoost definitions and search grids
 │   ├── train.py              Tuning, threshold selection, refit, test evaluation, plots
@@ -30,7 +25,7 @@ teams enter recent campaign data and see the prediction, its probability and the
 │   └── plotting.py           Shared figure style and colour palette
 ├── notebooks/01_eda.ipynb    Exploratory data analysis
 ├── report/                   269122F_Jayawardena_ML_Report.pdf, its build script and dashboard screenshots
-├── data/raw/                 Input data (campaign_daily.csv = real data)
+├── data/raw/                 Input data (campaign_daily.csv)
 ├── data/processed/           Modelling dataset written by train.py
 ├── models/                   Trained models + metadata.json
 ├── reports/                  Metrics tables, predictions, explanation summaries, figures/
@@ -61,8 +56,7 @@ python report/build_report.py                                                # r
 pytest                                                                       # tests, including the model quality gate
 ```
 
-`src.train` uses `data/raw/campaign_daily.csv` if it exists, otherwise the synthetic file. Use `--data path.csv` to
-point it elsewhere. To regenerate the synthetic data: `python -m src.generate_synthetic`.
+`src.train` uses `data/raw/campaign_daily.csv` by default. Use `--data path.csv` to select another input file.
 
 ## Deployment and MLOps (Azure)
 

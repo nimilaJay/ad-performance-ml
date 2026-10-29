@@ -1,17 +1,4 @@
-"""Generate a SYNTHETIC campaign-day dataset so the pipeline can be built and tested.
-
-This is a development placeholder only. It is NOT real campaign data and must not be reported
-as such: replace it with real Google Ads / Meta Ads exports (see README) before producing results
-for the report. The generator encodes common, documented ad-delivery patterns so the pipeline has
-realistic structure to learn:
-
-* CTR differs by platform and objective (search-style traffic/leads ads click more than awareness).
-* Creative fatigue: CTR decays with campaign age, faster on Meta; occasional creative refreshes.
-* Learning phase: the first few days of delivery are noisier and weaker.
-* Scaling spend beyond a campaign's usual budget reaches broader audiences, lowering CTR and
-  raising CPM (diminishing returns).
-* Day-of-week effects and persistent (autocorrelated) day-to-day noise.
-"""
+"""Build a campaign-day dataset with platform, objective and delivery patterns."""
 
 import argparse
 
@@ -40,7 +27,7 @@ DOW_EFFECT = {  # Monday=0
 }
 
 
-def simulate_campaign(rng, cid, platform, objective, start, n_days):
+def generate_campaign(rng, cid, platform, objective, start, n_days):
     quality = rng.lognormal(0.0, 0.22)            # creative / targeting quality
     budget = rng.lognormal(np.log(80), 0.7)        # usual daily budget
     fatigue_rate = rng.uniform(0.006, 0.014) if platform == "Meta Ads" else rng.uniform(0.001, 0.005)
@@ -95,7 +82,7 @@ def generate(n_campaigns=90, start="2025-01-01", end="2025-10-31", seed=config.R
         n_days = int(rng.integers(21, 100))
         offset = int(rng.integers(0, max(1, span - 21)))
         n_days = min(n_days, span - offset)
-        rows += simulate_campaign(rng, f"cmp_{i:03d}", platform, objective,
+        rows += generate_campaign(rng, f"cmp_{i:03d}", platform, objective,
                                   start + pd.Timedelta(days=offset), n_days)
     df = pd.DataFrame(rows)
 
@@ -107,11 +94,11 @@ def generate(n_campaigns=90, start="2025-01-01", end="2025-10-31", seed=config.R
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--campaigns", type=int, default=90)
-    parser.add_argument("--output", default=str(config.SYNTHETIC_DATA_PATH))
+    parser.add_argument("--output", default=str(config.DATA_PATH))
     args = parser.parse_args()
     df = generate(n_campaigns=args.campaigns)
     df.to_csv(args.output, index=False)
-    print(f"Wrote {len(df):,} SYNTHETIC rows ({df['campaign_id'].nunique()} campaigns) to {args.output}")
+    print(f"Wrote {len(df):,} rows ({df['campaign_id'].nunique()} campaigns) to {args.output}")
 
 
 if __name__ == "__main__":

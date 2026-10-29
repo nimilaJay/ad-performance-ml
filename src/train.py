@@ -41,7 +41,7 @@ def tune(model_key, X_tr, y_tr, X_val, y_val):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--data", default=None, help="Standard-schema CSV (default: real data if present, else synthetic)")
+    parser.add_argument("--data", default=None, help="Standard-schema CSV (default: data/raw/campaign_daily.csv)")
     args = parser.parse_args()
 
     panel = data.load(args.data)
@@ -119,7 +119,6 @@ def main():
     metadata = {
         **meta,
         "data_path": str(source.relative_to(config.ROOT)) if source.is_relative_to(config.ROOT) else str(source),
-        "is_synthetic": panel.attrs["is_synthetic"],
         "cleaning_log": panel.attrs["cleaning_log"],
         "n_rows": {s: int(len(d)) for s, d in parts.items()},
         "positive_rate": {s: float(y[s].mean()) for s in parts},

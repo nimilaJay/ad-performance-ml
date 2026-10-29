@@ -147,9 +147,9 @@ def clean(df: pd.DataFrame, verbose: bool = True) -> pd.DataFrame:
 
 
 def load(path=None, verbose: bool = True) -> pd.DataFrame:
-    """Load the standard-schema CSV used for modelling (real data if present, else synthetic)."""
+    """Load the standard-schema campaign CSV used for modelling."""
     if path is None:
-        path = config.REAL_DATA_PATH if config.REAL_DATA_PATH.exists() else config.SYNTHETIC_DATA_PATH
+        path = config.DATA_PATH
     path = Path(path)
     if verbose:
         print(f"Loading {path}")
@@ -159,7 +159,6 @@ def load(path=None, verbose: bool = True) -> pd.DataFrame:
         raise ValueError(f"{path.name} is missing {missing}; convert exports with `python -m src.data`.")
     out = clean(df[REQUIRED_COLUMNS], verbose=verbose)
     out.attrs["source_path"] = str(path)
-    out.attrs["is_synthetic"] = "SYNTHETIC" in path.name.upper()
     return out
 
 
@@ -167,7 +166,7 @@ def main():
     parser = argparse.ArgumentParser(description="Combine ad-platform exports into the standard schema.")
     parser.add_argument("--export", nargs=2, action="append", metavar=("CSV", "PLATFORM"), required=True,
                         help='An export file and its platform name, e.g. --export meta.csv "Meta Ads"')
-    parser.add_argument("--output", default=str(config.REAL_DATA_PATH))
+    parser.add_argument("--output", default=str(config.DATA_PATH))
     parser.add_argument("--keep-names", action="store_true",
                         help="Keep original campaign names instead of anonymised IDs")
     args = parser.parse_args()

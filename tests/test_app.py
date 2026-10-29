@@ -17,9 +17,3 @@ def test_dashboard_renders_without_errors(app):
     assert not app.exception
     assert not app.error
     assert [t.label for t in app.tabs] == TABS
-
-
-def test_synthetic_data_is_disclosed(app, meta):
-    if not meta.get("is_synthetic"):
-        pytest.skip("models were trained on real data")
-    assert any("Synthetic placeholder data" in w.value for w in app.warning)

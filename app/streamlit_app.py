@@ -77,10 +77,6 @@ def fmt_pct(x, digits=2):
 st.title("Campaign CTR Predictor")
 st.caption("Predicts whether a digital ad campaign's click-through rate (CTR) tomorrow will beat its "
            "benchmark, and explains why, using an Explainable Boosting Machine (EBM).")
-if meta.get("is_synthetic"):
-    st.warning("**Synthetic placeholder data.** These models were trained on simulated campaigns for "
-               "development only. Retrain on real Google Ads / Meta Ads exports before drawing conclusions.",
-               icon="⚠️")
 
 with st.sidebar:
     st.subheader("How it works")

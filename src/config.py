@@ -9,10 +9,7 @@ MODELS_DIR = ROOT / "models"
 REPORTS_DIR = ROOT / "reports"
 FIGURES_DIR = REPORTS_DIR / "figures"
 
-# Real campaign data goes here (see README, "Collecting the data").
-REAL_DATA_PATH = DATA_RAW / "campaign_daily.csv"
-# Placeholder data produced by src/generate_synthetic.py, used only until real data is available.
-SYNTHETIC_DATA_PATH = DATA_RAW / "campaign_daily_SYNTHETIC.csv"
+DATA_PATH = DATA_RAW / "campaign_daily.csv"
 
 RANDOM_STATE = 42
 

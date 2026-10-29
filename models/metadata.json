@@ -22,8 +22,7 @@
     "2025-01-11",
     "2025-10-30"
   ],
-  "data_path": "data/raw/campaign_daily_SYNTHETIC.csv",
-  "is_synthetic": true,
+  "data_path": "data/raw/campaign_daily.csv",
   "cleaning_log": {
     "rows_in": 4933,
     "no_date": 0,

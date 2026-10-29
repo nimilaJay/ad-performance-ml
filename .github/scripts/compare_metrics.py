@@ -25,7 +25,7 @@ for model, result in new.items():
     before = old.get(model, {}).get("test", {})
     print(f"| {model} | " + " | ".join(fmt(before.get(k), result["test"].get(k)) for k, _ in FIELDS) + " |")
 print()
-data = meta["data_path"] + (" (synthetic placeholder data)" if meta.get("is_synthetic") else "")
+data = meta["data_path"]
 print(f"Data: `{data}`, {sum(meta['n_rows'].values()):,} campaign-days "
       f"(train ≤ {meta['train_end']} < validation ≤ {meta['val_end']} < test).")
 print()

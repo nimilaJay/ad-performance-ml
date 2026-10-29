@@ -5,6 +5,5 @@ __pycache__/
 .DS_Store
 catboost_info/
 
-# Real campaign exports can be commercially sensitive: keep them out of version control.
-data/raw/campaign_daily.csv
+# Account exports can be commercially sensitive: keep them out of version control.
 data/raw/*export*.csv
