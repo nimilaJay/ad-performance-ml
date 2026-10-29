@@ -1,0 +1,65 @@
+# Continuous training: retrain all models on the data in the repository, re-check them, and push
+# them to a branch with a one-click pull request link. Merging that pull request deploys them through
+# ci-cd.yml, so a person always reviews new models before they go live.
+name: Retrain
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Why retrain? (shown in the pull request)
+        required: false
+        default: Manual retraining run
+
+permissions:
+  contents: write  # push the branch with the new models
+
+jobs:
+  retrain:
+    name: Retrain, evaluate and propose
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-app.txt
+      - name: Install dependencies
+        run: pip install -r requirements-app.txt "pytest>=8.0"
+      - name: Tune and train (chronological train / validation / test)
+        run: python -m src.train
+      - name: Explainability analysis
+        run: python -m src.explain
+      - name: Tests and quality gate on the new models
+        run: pytest
+      - name: Compare with the models on main
+        run: |
+          python .github/scripts/compare_metrics.py > comparison.md
+          cat comparison.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Push the retrained models to a branch
+        env:
+          REASON: ${{ inputs.reason }}
+        run: |
+          branch="retrain/run-${{ github.run_number }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add models reports data/processed
+          # GitHub pre-fills the pull request description from this message.
+          {
+            echo "Retrained models (run ${{ github.run_number }})"
+            echo
+            echo "**Reason:** $REASON"
+            echo
+            cat comparison.md
+            echo
+            echo "Merging this pull request deploys the new models through the CI/CD workflow."
+          } > message.md
+          git commit --cleanup=whitespace --file message.md  # keep the "###" heading lines
+          git push origin "$branch"
+          link="${{ github.server_url }}/${{ github.repository }}/compare/main...$branch?expand=1"
+          echo "### [Open a pull request with these models]($link)" >> "$GITHUB_STEP_SUMMARY"

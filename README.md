@@ -34,7 +34,7 @@ teams enter recent campaign data and see the prediction, its probability and the
 ├── reports/                  Metrics tables, predictions, explanation summaries, figures/
 ├── tests/                    Data, feature-pipeline, model-quality and dashboard tests (pytest)
 ├── Dockerfile                Container image for the dashboard
-├── .github/workflows/        CI/CD pipeline: test -> build -> deploy to Azure
+├── .github/workflows/        GitHub Actions: CI/CD to Azure, retraining, daily health check
 └── deploy/azure_setup.sh     One-time Azure setup for the pipeline
 ```
 
@@ -64,30 +64,38 @@ point it elsewhere. To regenerate the synthetic data: `python -m src.generate_sy
 
 ## Deployment and MLOps (Azure)
 
-The dashboard is deployed to **Azure Container Apps** by a GitHub Actions pipeline on every push to `main`:
+The dashboard runs on **Azure Container Apps**. Everything after a one-time setup happens in GitHub Actions:
 
 ```
-git push -> GitHub Actions
-              1. test    pytest: cleaning, no look-ahead in features, models reproduce the reported
-                         results, EBM explanations add up, quality gate, dashboard renders
-              2. build   Docker image, smoke-tested as a running container
-              3. deploy  image tagged with the commit ID -> Azure Container Registry
-                         -> Azure Container Apps (new revision) -> live check on the public HTTPS URL
+Retrain workflow ("Run workflow" button)
+  train + tune -> explainability -> tests + quality gate -> branch + one-click pull request with a metrics comparison
+                                                                       |
+                                                                       | merge
+                                                                       v
+CI/CD workflow (every push to main)
+  1. test    pytest: cleaning, no look-ahead in features, models reproduce the reported results,
+             EBM explanations add up, quality gate, dashboard renders
+  2. build   Docker image, smoke-tested as a running container
+  3. deploy  image tagged with the commit ID -> Azure Container Registry
+             -> Azure Container Apps (new revision) -> live check on the public HTTPS URL
+
+Health check workflow (daily): the live app must answer, otherwise GitHub emails a failure
 ```
 
-- **Quality gate:** a release is blocked unless the EBM reaches a test ROC-AUC of at least 0.80 and beats the
-  persistence baseline (`tests/test_models.py`).
-- **Traceability:** every image tag and Container Apps revision carries its git commit, and the dashboard sidebar
-  shows it as "App build".
-- **No stored passwords:** GitHub signs in to Azure with OIDC, as a managed identity limited to this resource group.
-- **Retraining:** run `python -m src.train` and `python -m src.explain`, then commit `models/`, `reports/` and
-  `data/processed/`. The pipeline re-tests the new models against the gate and redeploys them.
-- **Rollback:** point the app at an earlier image, e.g.
-  `az containerapp update -n ctr-dashboard -g rg-ctr-dashboard --image <registry>.azurecr.io/ctr-dashboard:<commit>`.
-- **Monitoring:** logs and metrics are in the Container Apps resource in the Azure portal (Log stream, Metrics).
+| MLOps practice | How it is done here |
+|---|---|
+| Versioning | Code, data, models and metrics live in git; every image tag and Container Apps revision carries its commit, and the dashboard sidebar shows it as "App build". |
+| Continuous integration | `tests/`: data cleaning, chronological split, no look-ahead in features, models reproduce the reported results, EBM explanations add up exactly, dashboard renders. |
+| Quality gate | A release is blocked unless the EBM reaches a test ROC-AUC of at least 0.80 and beats the persistence baseline (`tests/test_models.py`). |
+| Continuous delivery | `.github/workflows/ci-cd.yml`: test -> build -> deploy, with the `production` environment showing the live URL. |
+| Continuous training | `.github/workflows/retrain.yml`: retrains on the data in the repository, pushes the models to a branch and links a pull request with a metrics comparison; a person reviews and merges it, which deploys. |
+| Monitoring | `.github/workflows/health-check.yml` daily, plus a live check after every deploy; logs and metrics in the Azure portal. |
+| Rollback | Re-run the **deploy** job of an earlier successful CI/CD run: that commit's image goes live again. |
+| Security | GitHub signs in to Azure with OIDC (no stored password) as a managed identity limited to this resource group; the app pulls images with its own pull-only identity. |
 
 **One-time setup** (needs the Azure CLI, Docker and the GitHub CLI): `az login`, then `bash deploy/azure_setup.sh`.
-It creates the registry, the app and the GitHub connection, and prints the live URL. The app scales to zero when idle,
+It creates the registry, the app and the GitHub connection, and prints the live URL. Azure for Students allows
+only a few regions and one Container Apps environment per subscription; the script defaults to East Asia. The app scales to zero when idle,
 so it stays within the Container Apps free monthly allowance; the Basic registry costs about US$5 a month. Remove
 everything with `az group delete --name rg-ctr-dashboard --yes`.
 

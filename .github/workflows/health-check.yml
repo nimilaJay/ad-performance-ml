@@ -1,0 +1,29 @@
+# Monitoring: check once a day that the live dashboard answers. A failed run sends GitHub's
+# usual "workflow failed" email.
+name: Health check
+
+on:
+  schedule:
+    - cron: "0 3 * * *"  # 03:00 UTC = 08:30 in Sri Lanka
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  check:
+    name: Live app answers
+    if: vars.AZURE_APP_URL != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the live dashboard
+        run: |
+          # The app scales to zero when idle, so allow time for a cold start.
+          for _ in $(seq 1 12); do
+            if curl -fsS --max-time 30 "${{ vars.AZURE_APP_URL }}/_stcore/health"; then
+              echo "### ${{ vars.AZURE_APP_URL }} is up" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::The live dashboard did not answer at ${{ vars.AZURE_APP_URL }}"
+          exit 1
