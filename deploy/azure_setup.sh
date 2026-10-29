@@ -14,7 +14,9 @@
 #     az group delete --name rg-ctr-dashboard --yes
 set -euo pipefail
 
-LOCATION="${LOCATION:-southeastasia}"
+# Azure for Students allows only a few regions (list them with `az policy assignment list`) and one
+# Container Apps environment per subscription. East Asia provisions in about two minutes.
+LOCATION="${LOCATION:-eastasia}"
 RG="${RG:-rg-ctr-dashboard}"
 APP="${APP:-ctr-dashboard}"
 ENVIRONMENT="${ENVIRONMENT:-ctr-dashboard-env}"
@@ -25,8 +27,9 @@ SOURCE_REF="${SOURCE_REF:-origin/main}"
 REPO="$(gh repo view --json nameWithOwner --jq .nameWithOwner)"
 SUBSCRIPTION_ID="$(az account show --query id --output tsv)"
 TENANT_ID="$(az account show --query tenantId --output tsv)"
-# Registry names are global and must be 5-50 lowercase letters or digits.
-ACR="${ACR:-ctrdash$(printf %s "$SUBSCRIPTION_ID" | shasum | cut -c1-10)}"
+# Registry names are global and must be 5-50 lowercase letters or digits. Including the region avoids
+# reusing a name that DNS caches may still map to a deleted registry elsewhere.
+ACR="${ACR:-ctrdash$(printf %s "$SUBSCRIPTION_ID$LOCATION" | shasum | cut -c1-10)}"
 
 echo "Subscription: $(az account show --query name --output tsv)"
 echo "Region: $LOCATION | resource group: $RG | registry: $ACR | GitHub repo: $REPO"
@@ -76,7 +79,10 @@ docker buildx build --platform linux/amd64 --build-arg GIT_SHA="$SHA" --tag "$IM
 rm -rf "$SRC"
 
 echo "==> Container Apps environment and app"
-az containerapp env create --name "$ENVIRONMENT" --resource-group "$RG" --location "$LOCATION" --output none
+# Standard (workload profiles) mode: newer CLIs may otherwise create an "express" environment, which does not
+# support the per-commit revision names the pipeline uses.
+az containerapp env create --name "$ENVIRONMENT" --resource-group "$RG" --location "$LOCATION" \
+  --environment-mode WorkloadProfiles --output none
 az containerapp create --name "$APP" --resource-group "$RG" --environment "$ENVIRONMENT" \
   --image "$IMAGE" --registry-server "$ACR.azurecr.io" \
   --user-assigned "$PULL_ID" --registry-identity "$PULL_ID" \
@@ -94,6 +100,7 @@ gh secret set AZURE_SUBSCRIPTION_ID --repo "$REPO" --body "$SUBSCRIPTION_ID"
 gh variable set AZURE_RESOURCE_GROUP --repo "$REPO" --body "$RG"
 gh variable set AZURE_ACR_NAME --repo "$REPO" --body "$ACR"
 gh variable set AZURE_CONTAINER_APP --repo "$REPO" --body "$APP"
+gh variable set AZURE_APP_URL --repo "$REPO" --body "$URL"  # used by the daily health check
 
 echo
 echo "Live app: $URL"
