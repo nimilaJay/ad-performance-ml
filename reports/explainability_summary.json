@@ -3,52 +3,52 @@
     {
       "label": "CTR index, last 7 days",
       "kind": "main effect",
-      "importance": 0.4734
+      "importance": 0.4738
     },
     {
       "label": "CTR index, last day",
       "kind": "main effect",
-      "importance": 0.3838
+      "importance": 0.3841
     },
     {
       "label": "CTR index, last 3 days",
       "kind": "main effect",
-      "importance": 0.3794
+      "importance": 0.3796
     },
     {
       "label": "Campaign age (days)",
       "kind": "main effect",
-      "importance": 0.1055
+      "importance": 0.1058
     },
     {
       "label": "Day of week (next day)",
       "kind": "main effect",
-      "importance": 0.1001
+      "importance": 0.1004
     },
     {
       "label": "CTR trend (1d minus 7d index)",
       "kind": "main effect",
-      "importance": 0.0918
+      "importance": 0.092
     },
     {
       "label": "Avg daily clicks, last 7 days",
       "kind": "main effect",
-      "importance": 0.0747
+      "importance": 0.0752
     },
     {
       "label": "Clicks, last day",
       "kind": "main effect",
-      "importance": 0.0687
+      "importance": 0.0686
     },
     {
       "label": "Cumulative spend",
       "kind": "main effect",
-      "importance": 0.0644
+      "importance": 0.0646
     },
     {
       "label": "Spend, last day",
       "kind": "main effect",
-      "importance": 0.0581
+      "importance": 0.0582
     }
   ],
   "shape_summaries": {
@@ -80,22 +80,22 @@
       ],
       "score": [
         -0.031,
-        -0.074,
-        0.035,
+        -0.075,
+        0.036,
         -0.014,
         0.027
       ],
       "lower": [
         -0.057,
-        -0.121,
-        0.01,
+        -0.122,
+        0.009,
         -0.037,
         -0.003
       ],
       "upper": [
         -0.005,
         -0.027,
-        0.06,
+        0.062,
         0.009,
         0.057
       ]
@@ -113,10 +113,10 @@
       "score": [
         0.044,
         0.067,
-        0.128,
-        0.108,
-        -0.026,
-        -0.2,
+        0.129,
+        0.109,
+        -0.027,
+        -0.201,
         -0.128
       ],
       "lower": [
@@ -125,14 +125,14 @@
         0.102,
         0.08,
         -0.067,
-        -0.231,
+        -0.232,
         -0.168
       ],
       "upper": [
         0.066,
         0.093,
         0.155,
-        0.137,
+        0.138,
         0.014,
         -0.17,
         -0.088
@@ -142,46 +142,46 @@
   "permutation_importance_top5": {
     "CatBoost": [
       {
+        "feature": "ctr_index_3d",
+        "importance": 0.0518
+      },
+      {
         "feature": "ctr_index_1d",
-        "importance": 0.0503
+        "importance": 0.0357
       },
       {
         "feature": "ctr_index_7d",
-        "importance": 0.0367
+        "importance": 0.0334
       },
       {
-        "feature": "ctr_index_3d",
-        "importance": 0.0284
-      },
-      {
-        "feature": "day_of_week",
-        "importance": 0.002
+        "feature": "spend_cum",
+        "importance": 0.0009
       },
       {
         "feature": "spend_1d",
-        "importance": 0.0013
+        "importance": 0.0005
       }
     ],
     "EBM": [
       {
         "feature": "ctr_index_7d",
-        "importance": 0.0686
+        "importance": 0.0656
       },
       {
         "feature": "ctr_index_1d",
-        "importance": 0.0462
+        "importance": 0.0431
       },
       {
         "feature": "ctr_index_3d",
-        "importance": 0.0257
+        "importance": 0.0263
+      },
+      {
+        "feature": "spend_cum",
+        "importance": 0.0009
       },
       {
         "feature": "ctr_trend",
-        "importance": 0.001
-      },
-      {
-        "feature": "spend_1d",
-        "importance": 0.0009
+        "importance": 0.0008
       }
     ],
     "Logistic Regression": [
@@ -212,33 +212,33 @@
       "case": "local_confident_above",
       "campaign_id": "cmp_053",
       "target_date": "2025-10-09",
-      "probability": 0.9907773156220755,
+      "probability": 0.9897077692755881,
       "actual": "above",
       "top_contributions": [
         {
           "label": "CTR index, last 7 days",
           "value": "2.18",
-          "contribution": 1.449
+          "contribution": 1.45
         },
         {
           "label": "CTR index, last day",
           "value": "3.04",
-          "contribution": 1.124
+          "contribution": 1.131
         },
         {
           "label": "CTR index, last 3 days",
           "value": "2.75",
-          "contribution": 0.754
+          "contribution": 0.762
         },
         {
           "label": "CTR trend (1d minus 7d index)",
           "value": "0.87",
-          "contribution": 0.399
+          "contribution": 0.4
         },
         {
-          "label": "Impressions, last day \u00d7 CTR index, last day",
-          "value": "902, 3.04",
-          "contribution": 0.124
+          "label": "Day of week (next day)",
+          "value": "Thu",
+          "contribution": 0.109
         }
       ]
     },
@@ -246,33 +246,33 @@
       "case": "local_confident_below",
       "campaign_id": "cmp_040",
       "target_date": "2025-10-18",
-      "probability": 0.0029560532420616083,
+      "probability": 0.0032363291641406096,
       "actual": "below",
       "top_contributions": [
         {
           "label": "CTR index, last 7 days",
           "value": "0.53",
-          "contribution": -1.817
+          "contribution": -1.826
         },
         {
           "label": "CTR index, last 3 days",
           "value": "0.49",
-          "contribution": -1.153
+          "contribution": -1.155
         },
         {
           "label": "CTR index, last day",
           "value": "0.48",
-          "contribution": -0.856
+          "contribution": -0.857
         },
         {
           "label": "Campaign age (days)",
           "value": "90",
-          "contribution": -0.356
+          "contribution": -0.346
         },
         {
           "label": "Campaign age (days) \u00d7 CTR index, last 7 days",
           "value": "90, 0.53",
-          "contribution": -0.315
+          "contribution": -0.228
         }
       ]
     },
@@ -280,33 +280,33 @@
       "case": "local_misclassified",
       "campaign_id": "cmp_065",
       "target_date": "2025-10-16",
-      "probability": 0.9832598488502241,
+      "probability": 0.9811209776313092,
       "actual": "below",
       "top_contributions": [
         {
           "label": "CTR index, last day",
           "value": "2.72",
-          "contribution": 1.124
+          "contribution": 1.131
         },
         {
           "label": "CTR index, last 7 days",
           "value": "1.64",
-          "contribution": 0.926
+          "contribution": 0.927
         },
         {
           "label": "CTR index, last 3 days",
           "value": "2.09",
-          "contribution": 0.743
+          "contribution": 0.75
         },
         {
           "label": "CTR trend (1d minus 7d index)",
           "value": "1.08",
-          "contribution": 0.399
+          "contribution": 0.4
         },
         {
-          "label": "Impressions, last day \u00d7 CTR index, last day",
-          "value": "949, 2.72",
-          "contribution": 0.128
+          "label": "Avg daily clicks, last 7 days \u00d7 CTR index, last day",
+          "value": "13, 2.72",
+          "contribution": 0.126
         }
       ]
     }

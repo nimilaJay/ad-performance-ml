@@ -82,16 +82,16 @@
     "cpm_7d"
   ],
   "thresholds": {
-    "EBM": 0.5122494366833475,
-    "Logistic Regression": 0.5730194057861365,
-    "CatBoost": 0.5845668904637413,
+    "EBM": 0.5127748012096877,
+    "Logistic Regression": 0.5730194057870911,
+    "CatBoost": 0.5953515265640063,
     "Persistence baseline": 1.0
   },
   "best_params": {
     "EBM": {
       "interactions": 10,
       "max_bins": 128,
-      "min_samples_leaf": 4,
+      "min_samples_leaf": 20,
       "learning_rate": 0.015
     },
     "Logistic Regression": {
@@ -99,13 +99,13 @@
       "class_weight": "balanced"
     },
     "CatBoost": {
-      "depth": 6,
-      "learning_rate": 0.03,
-      "l2_leaf_reg": 10
+      "depth": 4,
+      "learning_rate": 0.1,
+      "l2_leaf_reg": 3
     },
     "Persistence baseline": {
       "rule": "predict above if last-day CTR index > 1"
     }
   },
-  "trained_at": "2026-10-29T18:54:23"
+  "trained_at": "2026-10-30T04:56:15"
 }
