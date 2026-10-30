@@ -25,6 +25,10 @@ IMAGE_NAME="ctr-dashboard"
 SOURCE_REF="${SOURCE_REF:-origin/main}"
 
 REPO="$(gh repo view --json nameWithOwner --jq .nameWithOwner)"
+# Subject prefix of GitHub's OIDC tokens for this repo. Newer repos include owner and repo IDs
+# (repo:owner@123/name@456); older ones use repo:owner/name.
+SUBJECT_PREFIX="$(gh api "repos/$REPO/actions/oidc/customization/sub" --jq '.sub_claim_prefix // empty' || true)"
+SUBJECT_PREFIX="${SUBJECT_PREFIX:-repo:$REPO}"
 SUBSCRIPTION_ID="$(az account show --query id --output tsv)"
 TENANT_ID="$(az account show --query tenantId --output tsv)"
 # Registry names are global and must be 5-50 lowercase letters or digits. Including the region avoids
@@ -65,7 +69,7 @@ az role assignment create --assignee-object-id "$GITHUB_PRINCIPAL" --assignee-pr
 for target in "main:ref:refs/heads/main" "production:environment:production"; do
   az identity federated-credential create --identity-name "$APP-github" --resource-group "$RG" \
     --name "github-${target%%:*}" --issuer https://token.actions.githubusercontent.com \
-    --subject "repo:$REPO:${target#*:}" --audiences api://AzureADTokenExchange --output none
+    --subject "$SUBJECT_PREFIX:${target#*:}" --audiences api://AzureADTokenExchange --output none
 done
 
 echo "==> Building the first image from $SOURCE_REF (later images come from GitHub Actions)"
