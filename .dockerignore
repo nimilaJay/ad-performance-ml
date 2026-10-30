@@ -12,5 +12,4 @@ tests
 deploy
 
 # Account exports can be commercially sensitive: never bake them into an image.
-data/raw/campaign_daily.csv
 data/raw/*export*.csv
