@@ -5,6 +5,8 @@ an **Explainable Boosting Machine (EBM)**, and explains every prediction. Logist
 as comparison models, alongside a naive "tomorrow = today" persistence baseline. A Streamlit dashboard lets marketing
 teams enter recent campaign data and see the prediction, its probability and the factors driving it.
 
+**Live dashboard:** https://ctr-dashboard.purplefield-4d57f34d.eastasia.azurecontainerapps.io (Azure Container Apps; the first visit after a quiet period takes about 20 seconds while it starts).
+
 > **Status:** the repository ships with a **synthetic placeholder dataset** (`data/raw/campaign_daily_SYNTHETIC.csv`)
 > so that the full pipeline runs end to end. All results currently in `reports/` and `models/` come from that synthetic
 > data and **must not be reported as findings**. Add real campaign data (see below) and re-run the pipeline before

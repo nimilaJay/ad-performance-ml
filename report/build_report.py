@@ -37,6 +37,7 @@ FIGS = config.FIGURES_DIR
 SHOTS = ROOT / "report" / "screenshots"
 OUT = ROOT / "report" / "269122F_Jayawardena_ML_Report.pdf"
 REPO_URL = "https://github.com/nimilaJay/ad-performance-ml"
+LIVE_URL = "https://ctr-dashboard.purplefield-4d57f34d.eastasia.azurecontainerapps.io"
 
 # ---------------------------------------------------------------- fonts and styles
 
@@ -346,6 +347,61 @@ def pipeline_diagram():
     return d
 
 
+def mlops_diagram():
+    w, h = TEXT_W, 178
+    d = Drawing(w, h)
+    gap_x = 16
+    bw, bh = (w - 4 * gap_x) / 5, 46
+    top_y, bottom_y = h - bh - 4, h - 2 * bh - 54
+    x_of = [c * (bw + gap_x) for c in range(5)]
+    blue, grey = colors.HexColor("#e8f0f8"), colors.HexColor("#f3f3f3")
+
+    def box(c, y, lines, fill):
+        x = x_of[c]
+        d.add(Rect(x, y, bw, bh, rx=5, ry=5, fillColor=fill, strokeColor=colors.HexColor("#7f9cbc"),
+                   strokeWidth=0.7))
+        for k, line in enumerate(lines):
+            d.add(String(x + bw / 2, y + bh / 2 + 9 - 11 * k, line, fontName="Sans-Bold" if k == 0 else "Sans",
+                         fontSize=8, textAnchor="middle", fillColor=INK))
+
+    def head(x, y, direction):
+        pts = {"right": [x, y, x - 5, y + 3, x - 5, y - 3], "up": [x, y, x - 3, y - 5, x + 3, y - 5]}[direction]
+        d.add(Polygon(pts, fillColor=GREY, strokeColor=GREY))
+
+    def line(*xy):
+        for (x1, y1), (x2, y2) in zip(xy, xy[1:]):
+            d.add(Line(x1, y1, x2, y2, strokeColor=GREY, strokeWidth=0.9))
+
+    top = [["Push to main", "code or merged", "new models"], ["1. Test", "20 tests and", "quality gate"],
+           ["2. Build", "Docker image,", "smoke test"], ["3. Deploy", "registry, new", "app revision"],
+           ["Live dashboard", "Azure Container", "Apps (HTTPS)"]]
+    for c, lines in enumerate(top):
+        box(c, top_y, lines, blue if c < 4 else grey)
+        if c < 4:
+            line((x_of[c] + bw, top_y + bh / 2), (x_of[c + 1], top_y + bh / 2))
+            head(x_of[c + 1], top_y + bh / 2, "right")
+    bottom = {0: ["Retrain", "Run workflow", "button"], 1: ["Train and test", "tuning, explain,", "quality gate"],
+              2: ["Pull request", "metrics compared", "with production"], 4: ["Health check", "daily: does the", "app answer?"]}
+    for c, lines in bottom.items():
+        box(c, bottom_y, lines, grey)
+    for c in (0, 1):
+        line((x_of[c] + bw, bottom_y + bh / 2), (x_of[c + 1], bottom_y + bh / 2))
+        head(x_of[c + 1], bottom_y + bh / 2, "right")
+    # A person reviews and merges the pull request, which is a push to main.
+    mid_y = (top_y + bottom_y + bh) / 2
+    cx2, cx0 = x_of[2] + bw / 2, x_of[0] + bw / 2
+    line((cx2, bottom_y + bh), (cx2, mid_y), (cx0, mid_y), (cx0, top_y))
+    head(cx0, top_y, "up")
+    d.add(String((cx0 + cx2) / 2, mid_y + 4, "review and merge", fontName="Body-Italic", fontSize=8,
+                 textAnchor="middle", fillColor=GREY))
+    cx4 = x_of[4] + bw / 2
+    line((cx4, bottom_y + bh), (cx4, top_y))
+    head(cx4, top_y, "up")
+    d.add(String(w / 2, 10, "All steps run in GitHub Actions; only the initial Azure setup is run once by hand",
+                 fontName="Body-Italic", fontSize=8.5, textAnchor="middle", fillColor=GREY))
+    return d
+
+
 # ---------------------------------------------------------------- content
 
 def build():
@@ -363,7 +419,8 @@ def build():
            Spacer(1, 30 * mm)]
     info = [["Programme", "MSc in Artificial Intelligence"], ["Module", "Machine Learning (assignment report)"],
             ["Student name", "Jayawardena J.D.N.T."], ["Student ID", "269122F"],
-            ["Submission date", "29 October 2026"], ["Source code", f'<a href="{REPO_URL}" color="{ACCENT.hexval()}">{REPO_URL}</a>']]
+            ["Submission date", "29 October 2026"], ["Source code", f'<a href="{REPO_URL}" color="{ACCENT.hexval()}">{REPO_URL}</a>'],
+            ["Live demo", f'<a href="{LIVE_URL}" color="{ACCENT.hexval()}">{LIVE_URL}</a>']]
     t = Table([[P(a, "cellb"), P(b, "cell")] for a, b in info], colWidths=[38 * mm, 100 * mm], hAlign="LEFT")
     t.setStyle(TableStyle([("LINEBELOW", (0, 0), (-1, -1), 0.25, RULE), ("TOPPADDING", (0, 0), (-1, -1), 5),
                            ("BOTTOMPADDING", (0, 0), (-1, -1), 5), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
@@ -386,13 +443,13 @@ def build():
         f"significantly better than assuming tomorrow will look like today (difference {d_per[0]:+.3f}, 95% CI "
         f"{d_per[1]:.3f} to {d_per[2]:.3f}). The EBM's learned shape functions recovered the structure built into "
         "the data, including CTR persistence, creative fatigue and a weekend dip, and also exposed an effect that "
-        "the model averages away. A Streamlit dashboard makes the predictions and explanations available to "
-        "non-technical users."),
+        "the model averages away. A Streamlit dashboard, deployed on Microsoft Azure through a tested GitHub Actions "
+        "pipeline, makes the predictions and explanations available to non-technical users."),
         PageBreak(), P("Contents", "H1n")]
     toc = TableOfContents()
     toc.levelStyles = [
-        ParagraphStyle("toc0", fontName="Body-Bold", fontSize=10.5, leading=12.5, spaceBefore=3, leftIndent=0),
-        ParagraphStyle("toc1", fontName="Body", fontSize=10, leading=11.5, leftIndent=14)]
+        ParagraphStyle("toc0", fontName="Body-Bold", fontSize=10.5, leading=12, spaceBefore=2, leftIndent=0),
+        ParagraphStyle("toc1", fontName="Body", fontSize=10, leading=11, leftIndent=14)]
     toc.tableStyle = TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 0),
                                  ("RIGHTPADDING", (0, 0), (-1, -1), 0), ("TOPPADDING", (0, 0), (-1, -1), 1),
                                  ("BOTTOMPADDING", (0, 0), (-1, -1), 1)])
@@ -884,7 +941,7 @@ def build():
         "they would stay hidden.")]
 
     # 7 Dashboard
-    st += [P("7. Front-end dashboard", "H1"), P(
+    st += [P("7. Front-end dashboard and deployment", "H1"), P("7.1 Dashboard", "H2"), P(
         "The trained models are served through a Streamlit dashboard (<font face='Courier' size='9.5'>"
         "app/streamlit_app.py</font>) with five tabs."),
         bullets([
@@ -910,6 +967,59 @@ def build():
         P("The dashboard calls the same feature-engineering code as the training pipeline. A test confirmed that, "
           "for 60 random campaign-days, the inputs it builds from a seven-day history are identical to those used "
           "in training. It also shows a warning banner whenever the loaded models were trained on simulated data.")]
+
+    code = "<font face='Courier' size='9.5'>{}</font>".format
+    mlops = [["Practice", "Implementation"],
+             ["Versioning", "Code, data, models and metrics are kept in git. Each Docker image and each Container Apps "
+              "revision is tagged with its commit, which the dashboard shows as \u201cApp build\u201d."],
+             ["Automated testing", "20 tests on data cleaning, the chronological split, look-ahead leakage, "
+              "reproduction of the reported results, EBM additivity and the dashboard."],
+             ["Quality gate", "A release is blocked unless the EBM reaches a test ROC-AUC of at least 0.80 and beats "
+              "the persistence baseline."],
+             ["Continuous delivery", "Test, then build and smoke-test the container, push it to Azure Container "
+              "Registry, roll out a new revision and check the live URL."],
+             ["Continuous training", "A retraining workflow repeats tuning, evaluation and the quality gate, then "
+              "proposes the models in a pull request that compares their metrics with production."],
+             ["Monitoring", "A daily health check of the live app, plus container logs and metrics in Azure Log "
+              "Analytics."],
+             ["Rollback", "Re-running an earlier deploy job puts that commit's image back into service."],
+             ["Security", "GitHub signs in to Azure through OpenID Connect without a stored password, as an identity "
+              "limited to one resource group; the app pulls images with a separate read-only identity."]]
+    st += [P("7.2 Deployment and MLOps", "H2"), P(
+        "The dashboard runs on Microsoft Azure as a Docker container on Azure Container Apps, which scales to zero "
+        "when nobody is using it, so apart from about US$5 a month for the container registry it stays within the "
+        "free allowance of a student subscription. It is publicly available at:"),
+        Paragraph(f'<a href="{LIVE_URL}" color="{ACCENT.hexval()}">{LIVE_URL}</a>',
+                  ParagraphStyle("url", parent=S["body"], alignment=TA_CENTER)),
+        P(f"After a one-time setup script ({code('deploy/azure_setup.sh')}), everything is automated with three GitHub Actions workflows that "
+        "follow common MLOps practice (Kreuzberger, Kühl and Hirschl, 2023), shown in Figure 13 and Table 9."),
+        KeepTogether([mlops_diagram(), P("Figure 13. Deployment and MLOps workflow. Blue steps run on every push "
+                                         "to the main branch; grey steps run on demand, daily or in production.",
+                                         "caption")]),
+        P(f"Every push to the main branch runs {code('ci-cd.yml')}. The tests treat the model as part of the "
+          "software: besides checking the code, they confirm that the saved models still reproduce the test "
+          "predictions in this report, that each EBM explanation adds up exactly to its prediction, and that "
+          "features computed for a day do not change when all later days are removed. A quality gate then stops "
+          "the release if the EBM falls below a test ROC-AUC of 0.80 or no longer beats the persistence "
+          "baseline. Only an image that has passed these tests and rendered the dashboard inside its container is "
+          "deployed (Figure 14). The retraining workflow ({}) runs the full training pipeline on the data in the "
+          "repository and proposes the new models in a pull request, so a person reviews the metric changes "
+          "before anything reaches production; merging the pull request triggers the normal CI/CD run. The first "
+          "retraining run, on GitHub's Linux servers rather than the machine the models were first trained on, "
+          "produced slightly different models from the same data and seeds: the EBM's test ROC-AUC moved from "
+          "0.893 to 0.894 and CatBoost's from 0.895 to 0.892. Small platform-dependent changes like these are why "
+          "new models are compared and reviewed before they are deployed rather than replacing the old ones "
+          "automatically.".format(code("retrain.yml"))),
+        table(mlops, [36 * mm, TEXT_W - 36 * mm], "Table 9. MLOps practices in the deployment.",
+              bold_first_col=True),
+        figure([SHOTS / "github_actions.png"], "Figure 14. A CI/CD run in GitHub Actions: tests, then build and "
+               "smoke test of the container image, then deployment to the production environment on Azure."),
+        P("The set-up has clear limits, which are typical of ML systems in their first deployment (Sculley et al., "
+          "2015). Retraining is started by hand rather than by a schedule or by detected data drift, and the "
+          "health check only confirms that the app answers, not that its predictions remain accurate. The "
+          "training data is stored in the repository, which is acceptable for simulated data but not for "
+          "confidential account exports; with real data, the retraining workflow would read them from protected "
+          "cloud storage instead.")]
 
     # 8 Critical discussion
     st += [P("8. Critical discussion", "H1"), P("8.1 Limitations of the model", "H2"), P(
@@ -962,8 +1072,9 @@ def build():
         "The next steps follow directly from the discussion. The pipeline should first be retrained on real "
         "Google Ads and Meta Ads exports, which needs no code changes. The feature set should then gain a "
         "platform × day-of-week interaction and a relative-spend feature. Per-segment thresholds, and a regression "
-        "or multi-day target, would make the predictions more useful in practice. Finally, a deployed version would "
-        "need drift monitoring and a regular retraining schedule.")]
+        "or multi-day target, would make the predictions more useful in practice. Finally, the deployed dashboard "
+        "already has automated tests, a quality gate, on-demand retraining and a daily health check; data-drift "
+        "monitoring and a retraining schedule are the remaining steps towards production use.")]
 
     # References
     refs = [
@@ -975,6 +1086,8 @@ def build():
         "Friedman, J.H. (2001) 'Greedy function approximation: a gradient boosting machine', <i>Annals of "
         "Statistics</i>, 29(5), pp. 1189–1232.",
         "Hastie, T. and Tibshirani, R. (1990) <i>Generalized Additive Models</i>. London: Chapman &amp; Hall.",
+        "Kreuzberger, D., Kühl, N. and Hirschl, S. (2023) 'Machine learning operations (MLOps): overview, "
+        "definition, and architecture', <i>IEEE Access</i>, 11, pp. 31866–31879.",
         "Lou, Y., Caruana, R. and Gehrke, J. (2012) 'Intelligible models for classification and regression', "
         "<i>Proceedings of the 18th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</i>, "
         "pp. 150–158.",
@@ -995,6 +1108,8 @@ def build():
         "for new ads', <i>Proceedings of the 16th International Conference on World Wide Web</i>, pp. 521–530.",
         "Rudin, C. (2019) 'Stop explaining black box machine learning models for high stakes decisions and use "
         "interpretable models instead', <i>Nature Machine Intelligence</i>, 1(5), pp. 206–215.",
+        "Sculley, D. et al. (2015) 'Hidden technical debt in machine learning systems', <i>Advances in Neural "
+        "Information Processing Systems</i>, 28, pp. 2503–2511.",
         "Youden, W.J. (1950) 'Index for rating diagnostic tests', <i>Cancer</i>, 3(1), pp. 32–35."]
     st += [P("References", "H1")] + [P(r, "ref") for r in refs]
 
@@ -1015,6 +1130,10 @@ def build():
         P("python -m src.explain&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
           "# explainability figures and tables", "code"),
         P("streamlit run app/streamlit_app.py&nbsp;# dashboard", "code"),
+        P("pytest&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+          "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# tests and quality gate", "code"),
+        P("bash deploy/azure_setup.sh&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# one-time Azure setup; "
+          "later deployments run in GitHub Actions", "code"),
         P("Random seeds are fixed, and two consecutive runs produced identical data and metrics.")]
     files = [["File", "Purpose"],
              ["src/data.py", "Loading, validation and cleaning; converter for platform exports"],
@@ -1026,6 +1145,10 @@ def build():
              ["src/explain.py", "EBM explanations, partial dependence and permutation importance"],
              ["notebooks/01_eda.ipynb", "Exploratory data analysis"],
              ["app/streamlit_app.py", "Interactive dashboard"],
+             ["tests/", "Automated tests, including the deployment quality gate"],
+             ["Dockerfile", "Container image of the dashboard"],
+             [".github/workflows/", "GitHub Actions: CI/CD to Azure, retraining and daily health check"],
+             ["deploy/azure_setup.sh", "One-time Azure setup"],
              ["report/build_report.py", "Builds this report from the saved results"]]
     st.append(table(files, [52 * mm, TEXT_W - 52 * mm], "Table A1. Main source files."))
     return st
