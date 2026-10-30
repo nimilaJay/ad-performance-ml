@@ -969,6 +969,35 @@ def build():
           "in training. It also shows a warning banner whenever the loaded models were trained on simulated data.")]
 
     code = "<font face='Courier' size='9.5'>{}</font>".format
+    workflows = [["Workflow", "Trigger", "Steps", "First run"],
+                 ["CI/CD<br/><font name='Body'>ci-cd.yml</font>", "Every push to the main branch",
+                  "Tests and quality gate; build and smoke-test the image; push it to the registry, roll out a new "
+                  "revision and check the live URL", "Failed at the Azure sign-in (Table 11); after the fix, "
+                  "succeeded in about four minutes"],
+                 ["Retrain<br/><font name='Body'>retrain.yml</font>", "\u201cRun workflow\u201d button",
+                  "Tune and train; explainability analysis; tests and quality gate on the new models; push them to "
+                  "a branch with a pull-request link and a metrics comparison", "Succeeded in about three minutes"],
+                 ["Health check<br/><font name='Body'>health-check.yml</font>", "Daily at 03:00 UTC (08:30 in Sri Lanka)",
+                  "Request the live app's health endpoint, allowing time for a cold start", "Succeeded"]]
+    challenges = [["Problem", "Cause", "Fix"],
+                  ["Azure created an \u201cexpress\u201d Container Apps environment, which rejected the "
+                   "per-commit revision names", "A new default in the Azure command-line tool",
+                   "Ask for the standard (workload profiles) environment explicitly"],
+                  ["The environment stayed in \u201cWaiting\u201d for 40 minutes in Malaysia West, and a second "
+                   "one could not be created", "Azure for Students allows five regions and one Container Apps "
+                   "environment per subscription", "Delete it and deploy to East Asia, where the environment was "
+                   "ready in about two minutes"],
+                  ["Pushing the image failed after the registry was recreated in East Asia",
+                   "DNS caches still pointed the registry's name at the deleted registry in Malaysia West",
+                   "Registry names now include the region, so a new region gets a fresh name"],
+                  ["GitHub Actions could not sign in to Azure (error AADSTS700213)",
+                   "GitHub's sign-in tokens identify the repository by owner and repository IDs, not only by name",
+                   "Trust the exact subject prefix that GitHub reports through its API"],
+                  ["Workflows could not open pull requests", "GitHub's default repository setting, kept for security",
+                   "The retraining workflow pushes a branch and links a ready-made pull request for a person to open"],
+                  ["Retrained models differed slightly from the originals",
+                   "Floating-point differences between the Apple-silicon laptop and GitHub's Linux servers",
+                   "Expected; the pull request compares new and production metrics before anything is deployed"]]
     mlops = [["Practice", "Implementation"],
              ["Versioning", "Code, data, models and metrics are kept in git. Each Docker image and each Container Apps "
               "revision is tagged with its commit, which the dashboard shows as \u201cApp build\u201d."],
@@ -996,6 +1025,8 @@ def build():
         KeepTogether([mlops_diagram(), P("Figure 13. Deployment and MLOps workflow. Blue steps run on every push "
                                          "to the main branch; grey steps run on demand, daily or in production.",
                                          "caption")]),
+        table(workflows, [31 * mm, 30 * mm, TEXT_W - 31 * mm - 30 * mm - 36 * mm, 36 * mm],
+              "Table 9. The three GitHub Actions workflows and their first runs.", bold_first_col=True),
         P(f"Every push to the main branch runs {code('ci-cd.yml')}. The tests treat the model as part of the "
           "software: besides checking the code, they confirm that the saved models still reproduce the test "
           "predictions in this report, that each EBM explanation adds up exactly to its prediction, and that "
@@ -1009,8 +1040,9 @@ def build():
           "produced slightly different models from the same data and seeds: the EBM's test ROC-AUC moved from "
           "0.893 to 0.894 and CatBoost's from 0.895 to 0.892. Small platform-dependent changes like these are why "
           "new models are compared and reviewed before they are deployed rather than replacing the old ones "
-          "automatically.".format(code("retrain.yml"))),
-        table(mlops, [36 * mm, TEXT_W - 36 * mm], "Table 9. MLOps practices in the deployment.",
+          "automatically. Table 10 summarises how the deployment covers common MLOps practices."
+          .format(code("retrain.yml"))),
+        table(mlops, [36 * mm, TEXT_W - 36 * mm], "Table 10. MLOps practices in the deployment.",
               bold_first_col=True),
         figure([SHOTS / "github_actions.png"], "Figure 14. A CI/CD run in GitHub Actions: tests, then build and "
                "smoke test of the container image, then deployment to the production environment on Azure."),
@@ -1020,6 +1052,17 @@ def build():
           "training data is stored in the repository, which is acceptable for simulated data but not for "
           "confidential account exports; with real data, the retraining workflow would read them from protected "
           "cloud storage instead.")]
+
+    st += [P("7.3 Deployment challenges", "H2"), P(
+        "Getting the deployment to work took several attempts. Table 11 lists the problems in the order they came "
+        "up. Most of them come from the limits of a student subscription or from recent changes to Azure and "
+        "GitHub, so anyone repeating the set-up is likely to meet them; all of the fixes are now part of the setup "
+        "script."),
+        table(challenges, [52 * mm, 50 * mm, TEXT_W - 102 * mm], "Table 11. Problems met during deployment and "
+              "how they were fixed."),
+        P("None of these problems showed up in local tests; each appeared only when the pipeline ran against the "
+          "real cloud services. Deployment code therefore needs to be exercised end to end, just like the model "
+          "code, before it can be relied on.")]
 
     # 8 Critical discussion
     st += [P("8. Critical discussion", "H1"), P("8.1 Limitations of the model", "H2"), P(
